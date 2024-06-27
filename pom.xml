@@ -9,19 +9,19 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>17</java.version>
-        <spring-boot.version>3.0.7</spring-boot.version>
-        <spring-cloud.version>2022.0.3</spring-cloud.version>
-        <spring-cloud-alibaba.version>2022.0.0.0-RC2</spring-cloud-alibaba.version>
-        <mybatis-spring-boot-starter.version>3.0.2</mybatis-spring-boot-starter.version>
-        <shardingsphere.version>5.3.2</shardingsphere.version>
-        <jjwt.version>0.9.1</jjwt.version>
-        <fastjson2.version>2.0.36</fastjson2.version>
-        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
-        <dozer-core.version>6.5.2</dozer-core.version>
-        <hutool-all.version>5.8.20</hutool-all.version>
-        <redisson.version>3.21.3</redisson.version>
-        <guava.version>30.0-jre</guava.version>
+        <java.version>17</java.version>  <!-- Java 的版本 -->
+        <spring-boot.version>3.0.7</spring-boot.version>  <!-- Spring Boot 的版本 -->
+        <spring-cloud.version>2022.0.3</spring-cloud.version> <!-- Spring Cloud 的版本 -->
+        <spring-cloud-alibaba.version>2022.0.0.0-RC2</spring-cloud-alibaba.version>  <!-- Spring Cloud Alibaba 的版本 -->
+        <mybatis-spring-boot-starter.version>3.0.2</mybatis-spring-boot-starter.version>  <!-- MyBatis Spring Boot Starter 的版本 -->
+        <shardingsphere.version>5.3.2</shardingsphere.version>  <!-- ShardingSphere（分布式数据库中间件）的版本 -->
+        <jjwt.version>0.9.1</jjwt.version>     <!-- JJWT（Java JWT 实现）的版本 -->
+        <fastjson2.version>2.0.36</fastjson2.version>   <!-- Fastjson2（Java JSON 解析库）的版本 -->
+        <mybatis-plus.version>3.5.3.1</mybatis-plus.version> <!-- MyBatis Plus 的版本 -->
+        <dozer-core.version>6.5.2</dozer-core.version> <!-- Dozer（Java Bean 映射工具）的版本 -->
+        <hutool-all.version>5.8.20</hutool-all.version> <!-- Hutool（Java 工具类库）的版本 -->
+        <redisson.version>3.21.3</redisson.version> <!-- Redisson（基于 Redis 的 Java 工具库）的版本 -->
+        <guava.version>30.0-jre</guava.version> <!-- Guava（Google Java 工具库）的版本 -->
     </properties>
 
 
