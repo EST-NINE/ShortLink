@@ -3,6 +3,8 @@ package com.nageoffer.shortlink.admin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.nageoffer.shortlink.admin.common.convention.exception.ClientException;
+import com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.nageoffer.shortlink.admin.dao.entity.UserDO;
 import com.nageoffer.shortlink.admin.dao.mapper.UserMapper;
 import com.nageoffer.shortlink.admin.dto.resp.UserRespDTO;
@@ -23,8 +25,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
         UserDO userDO = baseMapper.selectOne(queryWrapper);
         UserRespDTO result = new UserRespDTO();
-        BeanUtils.copyProperties(userDO, result);
 
-        return result;
+        if(userDO != null){
+            BeanUtils.copyProperties(userDO, result);       // 此方法需要判空才可以，否则会报错
+            return result;
+        } else {
+            throw new ClientException(UserErrorCodeEnum.USER_NULL);
+        }
     }
 }
