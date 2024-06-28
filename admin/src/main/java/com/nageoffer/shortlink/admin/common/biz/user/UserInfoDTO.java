@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.admin.biz.user;
+package com.nageoffer.shortlink.admin.common.biz.user;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
