@@ -18,7 +18,9 @@ public enum UserErrorCodeEnum implements IErrorCode {
 
     USER_HAS_LOGIN("B000205","用户已登录"),
 
-    USER_LOGOUT_ERROR("B000206","用户Token不存在或者用户未登录"),;
+    USER_LOGOUT_ERROR("B000206","用户Token不存在或者用户未登录"),
+
+    USER_UPDATE_ERROR("B000207","用户记录更新失败");
 
     private final String code;
 
