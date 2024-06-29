@@ -26,6 +26,11 @@ public class ShortLinkCreateReqDTO {
     private String gid;
 
     /**
+     * 网站图标
+     */
+    private String favicon;
+
+    /**
      * 创建类型 0：控制台 1：接口
      */
     private int createdType;
