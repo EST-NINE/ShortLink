@@ -3,6 +3,8 @@ package com.nageoffer.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.admin.common.convention.result.Result;
+import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.nageoffer.shortlink.admin.remote.ShortLinkRemoteService;
 import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
@@ -40,4 +42,14 @@ public class ShortLinkController {
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         return shortLinkRemoteService.pageShortLink(requestParam);
     }
+
+    /**
+     * 更新短链接
+     */
+    @PostMapping("/api/short-link/admin/v1/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
+        shortLinkRemoteService.updateShortLink(requestParam);
+        return Results.success();
+    }
+
 }
