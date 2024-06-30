@@ -23,6 +23,7 @@ import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.project.service.ShortLinkService;
 import com.nageoffer.shortlink.project.toolkit.HashUtil;
+import com.nageoffer.shortlink.project.toolkit.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -95,6 +96,13 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             throw new ServiceException(String.format("短链接 %s 已存在", fullShortUrl));
         }
 
+        // 缓存预热
+        stringRedisTemplate.opsForValue().set(
+                String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                requestParam.getOriginUrl(),
+                LinkUtil.getShortLinkCacheValidTime(requestParam.getValidDate()),
+                TimeUnit.MILLISECONDS);
+        // 布隆过滤器缓存
         shortUriCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
