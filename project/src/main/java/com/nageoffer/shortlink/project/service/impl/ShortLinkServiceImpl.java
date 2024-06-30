@@ -275,6 +275,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
 
         try {
+            // 如果用户为第一次访问，则会执行 addResponseCookieTask
             Runnable addResponseCookieTask = () -> {
                 String uv = UUID.fastUUID().toString();
                 Cookie uvCookie = new Cookie("uv", uv);
@@ -292,14 +293,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .findFirst()
                         .map(Cookie::getValue)
                         .ifPresentOrElse(each -> {
-                            Long added = stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, each);
+                            Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, each);
                             // 如果不是第一次，则 set 为false
-                            uvFirstFlag.set(added != null && added > 0L);
+                            uvFirstFlag.set(uvAdded != null && uvAdded > 0L);
                         }, addResponseCookieTask);
             } else {
                 addResponseCookieTask.run();
             }
 
+            // 统计短链接监控 uip 访问量
+            String remoteAddr = LinkUtil.getActualIp((HttpServletRequest) request);
+            Long uipAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip:" + fullShortUrl,remoteAddr);
+            boolean uipFirstFlag = uipAdded != null && uipAdded > 0L;
 
             // 获取 GID
             if (StrUtil.isBlank(gid)) {
@@ -318,7 +323,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
                     .pv(1)
                     .uv(uvFirstFlag.get() ? 1 : 0)
-                    .uip(1)
+                    .uip(uipFirstFlag ? 1 : 0)
                     .hour(hour)
                     .weekday(weekValue)
                     .fullShortUrl(fullShortUrl)
