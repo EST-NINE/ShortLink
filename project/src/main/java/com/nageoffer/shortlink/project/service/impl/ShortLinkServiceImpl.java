@@ -41,9 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
-import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
-import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY;
+import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.*;
 
 
 /**
@@ -186,7 +186,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             return;
         }
 
-        // 加分布式锁，解决缓存击穿问题
+        // 判断布隆过滤器中是否存在对应的 KEY，解决缓存穿透问题(不存在的值)
+        boolean contains = shortUriCachePenetrationBloomFilter.contains(fullShortUrl);
+        if (!contains) {
+            return;
+        }
+        // 布隆过滤器存在可能会发生误判，这里在缓存中进行双重判定
+        String gotoIsNulShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
+        if (StrUtil.isNotBlank(gotoIsNulShortLink)) {
+            return;
+        }
+
+        // 加分布式锁，解决缓存击穿问题(同一时间过期)
         RLock lock = redissonClient.getLock(String.format(LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
         lock.lock();
         try {
@@ -201,7 +212,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
             if (shortLinkGotoDO == null) {
-                // 短链接不存在，严谨来说这个需要进行封控
+                // 设置 NULL 值，解决缓存穿透问题(不存在的值)
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 10, TimeUnit.MINUTES);
+
+                // 短链接不存在，严谨来说这个需要进行风控
                 return;
             }
 
