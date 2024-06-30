@@ -3,6 +3,7 @@ package com.nageoffer.shortlink.project.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.project.common.convention.result.Result;
 import com.nageoffer.shortlink.project.common.convention.result.Results;
+import com.nageoffer.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
 import com.nageoffer.shortlink.project.dto.req.RecycleBinSavaReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -39,4 +40,12 @@ public class RecycleBinController {
         return Results.success(recycleBinService.pageShortLink(requestParam));
     }
 
+    /**
+     * 恢复回收站中的短链接
+     */
+    @PostMapping("/api/short-link/v1/recycle-bin/recover")
+    public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam) {
+        recycleBinService.recoverRecycleBin(requestParam);
+        return Results.success();
+    }
 }
