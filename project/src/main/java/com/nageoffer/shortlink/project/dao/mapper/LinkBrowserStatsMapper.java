@@ -2,6 +2,8 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkBrowserStatsDO;
+import com.nageoffer.shortlink.project.dao.entity.LinkDeviceStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
@@ -34,10 +36,38 @@ public interface LinkBrowserStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
             "WHERE " +
             "    full_short_url = #{param.fullShortUrl} " +
             "    AND gid = #{param.gid} " +
-            "    AND date BETWEEN #{param.startDate} and #{param.endDate} " +
+            "    AND date BETWEEN   #{param.startDate} and  #{param.endDate} " +
             "GROUP BY " +
             "    full_short_url, gid, browser;")
     List<HashMap<String, Object>> listBrowserStatsByShortLink(@Param("param") ShortLinkStatsReqDTO requestParam);
 
-    // TODO 注意，这里有bug，将  "    gid, date, browser;" 改成   "    gid, browser;")
+    /**
+     * 根据分组获取指定日期内浏览器监控数据
+     */
+    @Select("SELECT " +
+            "    browser, " +
+            "    SUM(cnt) AS count " +
+            "FROM " +
+            "    t_link_browser_stats " +
+            "WHERE " +
+            "    gid = #{param.gid} " +
+            "    AND date BETWEEN  #{param.startDate} and  #{param.endDate} " +
+            "GROUP BY " +
+            "    gid, browser;")
+    List<HashMap<String, Object>> listBrowserStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
+
+    /**
+     * 根据分组获取指定日期内访问设备监控数据
+     */
+    @Select("SELECT " +
+            "    device, " +
+            "    SUM(cnt) AS cnt " +
+            "FROM " +
+            "    t_link_device_stats " +
+            "WHERE " +
+            "    gid = #{param.gid} " +
+            "    AND date BETWEEN  #{param.startDate} and  #{param.endDate} " +
+            "GROUP BY " +
+            "    gid, device;")
+    List<LinkDeviceStatsDO> listDeviceStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
 }
