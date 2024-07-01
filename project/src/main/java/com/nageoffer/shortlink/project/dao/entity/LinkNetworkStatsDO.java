@@ -1,4 +1,4 @@
-package com.nageoffer.shortlink.project.dao.mapper;
+package com.nageoffer.shortlink.project.dao.entity;
 
 
 import com.baomidou.mybatisplus.annotation.TableName;
