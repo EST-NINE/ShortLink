@@ -80,7 +80,7 @@ public class ShortLinkTableShardingTest {
             "  `date` date DEFAULT NULL COMMENT '日期',\n" +
             "  `today_pv` int(11) DEFAULT '0' COMMENT '今日PV',\n" +
             "  `today_uv` int(11) DEFAULT '0' COMMENT '今日UV',\n" +
-            "  `today_ip_count` int(11) DEFAULT '0' COMMENT '今日IP数',\n" +
+            "  `today_uip` int(11) DEFAULT '0' COMMENT '今日IP数',\n" +
             "  `create_time` datetime DEFAULT NULL COMMENT '创建时间',\n" +
             "  `update_time` datetime DEFAULT NULL COMMENT '修改时间',\n" +
             "  `del_flag` tinyint(1) DEFAULT NULL COMMENT '删除标识 0：未删除 1：已删除',\n" +
