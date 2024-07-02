@@ -29,6 +29,8 @@ spring:
       suffix: .html
 
 short-link:
+  domain:
+    default: nine.ink:8001
   stats:
     locale:
       amap-key: 824c511f0997586ea016f979fdb23087
