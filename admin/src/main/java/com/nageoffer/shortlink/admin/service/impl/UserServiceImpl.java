@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.admin.common.biz.user.UserContext;
 import com.nageoffer.shortlink.admin.common.convention.exception.ClientException;
+import com.nageoffer.shortlink.admin.common.convention.exception.ServiceException;
 import com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.nageoffer.shortlink.admin.dao.entity.UserDO;
 import com.nageoffer.shortlink.admin.dao.mapper.UserMapper;
@@ -60,7 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             BeanUtils.copyProperties(userDO, result);       // 此方法需要判空才可以，否则会报错
             return result;
         } else {
-            throw new ClientException(UserErrorCodeEnum.USER_NULL);
+            throw new ServiceException(UserErrorCodeEnum.USER_NULL);
         }
     }
 
