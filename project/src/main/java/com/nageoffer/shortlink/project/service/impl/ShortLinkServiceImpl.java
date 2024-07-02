@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.project.common.convention.exception.ClientException;
 import com.nageoffer.shortlink.project.common.convention.exception.ServiceException;
 import com.nageoffer.shortlink.project.common.enums.VailDateTypeEnum;
+import com.nageoffer.shortlink.project.config.GotoDomainWhiteListConfiguration;
 import com.nageoffer.shortlink.project.dao.entity.*;
 import com.nageoffer.shortlink.project.dao.mapper.*;
 import com.nageoffer.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
@@ -86,6 +87,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkStatsTodayMapper linkStatsTodayMapper;
     private final LinkStatsTodayService linkStatsTodayService;
     private final DelayShortLinkStatsProducer delayShortLinkStatsProducer;
+    private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -95,6 +97,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
+        verificationWhitelist(requestParam.getOriginUrl());
         String shortLinkSuffix = generateSuffix(requestParam);
         String fullShortUrl = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
@@ -205,6 +208,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateShortLink(ShortLinkUpdateReqDTO requestParam) {
+        verificationWhitelist(requestParam.getOriginUrl());
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .eq(ShortLinkDO::getGid, requestParam.getOriginGid())
                 .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
@@ -661,5 +665,21 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
         }
         return null;
+    }
+
+    // 验证白名单
+    private void verificationWhitelist(String originUrl) {
+        Boolean enable = gotoDomainWhiteListConfiguration.getEnable();
+        if (enable == null || !enable) {
+            return;
+        }
+        String domain = LinkUtil.extractDomain(originUrl);
+        if (StrUtil.isBlank(domain)) {
+            throw new ClientException("跳转链接填写错误");
+        }
+        List<String> details = gotoDomainWhiteListConfiguration.getDetails();
+        if (!details.contains(domain)) {
+            throw new ClientException("演示环境为避免恶意攻击，请生成以下网站跳转链接：" + gotoDomainWhiteListConfiguration.getNames());
+        }
     }
 }
