@@ -73,7 +73,7 @@ import static com.nageoffer.shortlink.project.common.constant.ShortLinkConstant.
 @RequiredArgsConstructor
 public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLinkDO> implements ShortLinkService {
 
-    private final RBloomFilter<String> shortUriCachePenetrationBloomFilter;
+    private final RBloomFilter<String> shortUriCreateCachePenetrationBloomFilter;
     private final ShortLinkGotoMapper shortLinkGotoMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
@@ -145,7 +145,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 LinkUtil.getShortLinkCacheValidTime(requestParam.getValidDate()),
                 TimeUnit.MILLISECONDS);
         // 布隆过滤器缓存
-        shortUriCachePenetrationBloomFilter.add(fullShortUrl);
+        shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(requestParam.getOriginUrl())
@@ -392,7 +392,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
 
         // 判断布隆过滤器中是否存在对应的 KEY，解决缓存穿透问题(不存在的值)
-        boolean contains = shortUriCachePenetrationBloomFilter.contains(fullShortUrl);
+        boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         if (!contains) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
@@ -639,7 +639,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             originUrl += UUID.randomUUID().toString();
             shortUri = HashUtil.hashToBase62(originUrl);
             // 短链接去重，如果布隆过滤器中不存在，则跳出循环 (布隆过滤器中如果不存在则一定不存在，不会误判)
-            if (!shortUriCachePenetrationBloomFilter.contains(requestParam.getDomain() + "/" + shortUri)) {
+            if (!shortUriCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortUri)) {
                 break;
             }
 
