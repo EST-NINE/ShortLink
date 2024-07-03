@@ -1,2 +1,45 @@
 server:
   port: 8000
+spring:
+  application:
+    name: short-link-gateway
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+ #     password: 123456
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+    gateway:
+      # 网关路由配置
+      routes:
+        # 路由配置
+        - id: short-link-admin
+          uri: lb://short-link-admin/api/short-link/admin/**
+          # 路由ID，用于识别路由
+          predicates:
+            # 路由预定义条件
+            - Path=/api/short-link/admin/**
+          # 路由过滤器
+          filters:
+            # 过滤器
+            - name: TokenValidate
+              args:
+                # 参数
+                whitePathList:
+                  # 白名单路径
+                  - /api/short-link/admin/v1/user/login
+                  - /api/short-link/admin/v1/user/has-username
+
+        - id: short-link-project
+          uri: lb://short-link-project/api/short-link/**
+          # 路由ID，用于识别路由
+          predicates:
+            # 路由预定义条件
+            - Path=/api/short-link/**
+          # 路由过滤器
+          filters:
+            # 过滤器
+            - name: TokenValidate
