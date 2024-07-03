@@ -6,7 +6,7 @@ import lombok.Data;
  * 回收站保存请求参数
  */
 @Data
-public class RecycleBinSavaReqDTO {
+public class RecycleBinSaveReqDTO {
 
     /**
      * 分组标识

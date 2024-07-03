@@ -70,7 +70,7 @@ public interface ShortLinkRemoteService {
      * @param requestParam 查询短链接请求参数
      * @return 短链接数量响应结果
      */
-    default Result<List<ShortLinkCountQueryRespDTO>> listGroupShortLinkCount(List<String> requestParam) {
+    default Result<List<ShortLinkGroupCountQueryRespDTO>> listGroupShortLinkCount(List<String> requestParam) {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("requestParam", requestParam);
         String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/count", requestMap);
@@ -107,7 +107,7 @@ public interface ShortLinkRemoteService {
      *
      * @param requestParam 保存回收站参数
      */
-    default void savRecycleBin(RecycleBinSavaReqDTO requestParam) {
+    default void savRecycleBin(RecycleBinSaveReqDTO requestParam) {
         HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/save", JSON.toJSONString(requestParam));
     }
 

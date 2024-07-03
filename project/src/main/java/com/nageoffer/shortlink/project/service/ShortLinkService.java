@@ -9,7 +9,7 @@ import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
-import com.nageoffer.shortlink.project.dto.resp.ShortLinkCountQueryRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import jakarta.servlet.ServletRequest;
@@ -44,7 +44,7 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * @param requestParam 分组id列表
      * @return 查询短链接分组内的响应
      */
-    List<ShortLinkCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam);
+    List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> requestParam);
 
 
     /**
