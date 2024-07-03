@@ -2,7 +2,6 @@ package com.nageoffer.shortlink.project.mq.producer;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,6 @@ import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.S
 public class ShortLinkStatsSaveProducer {
 
     private final StringRedisTemplate stringRedisTemplate;
-
-    @Value("${spring.data.redis.channel-topic.short-link-stats}")
-    private String topic;
 
     /**
      * 发送延迟消费短链接统计
