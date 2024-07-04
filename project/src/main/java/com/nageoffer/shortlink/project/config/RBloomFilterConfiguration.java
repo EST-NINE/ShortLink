@@ -20,8 +20,8 @@ public class RBloomFilterConfiguration {
      */
     @Bean
     public RBloomFilter<String> shortUriCachePenetrationBloomFilter(RedissonClient redissonClient) {
-        // 创建一个名为"userRegisterBloomFilter"的布隆过滤器实例
-        RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter("shortUriBloomFilter");
+        // 创建一个名为"shortUriCreateCachePenetrationBloomFilter"的布隆过滤器实例
+        RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter("shortUriCreateCachePenetrationBloomFilter");
 
         // 初始化布隆过滤器，预计插入1000万个元素，并设置误报率为0.01（即1%）
         // 注意：这些参数应该根据您的实际需求进行调整
