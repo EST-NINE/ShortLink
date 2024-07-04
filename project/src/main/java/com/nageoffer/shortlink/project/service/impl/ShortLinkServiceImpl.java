@@ -105,7 +105,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .enableStatus(0)
                 .totalPv(0)
                 .totalUv(0)
-                .delTime(0L)
                 .totalUip(0)
                 .fullShortUrl(fullShortUrl)
                 .build();
@@ -178,7 +177,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .totalPv(0)
                     .totalUv(0)
                     .totalUip(0)
-                    .delTime(0L)
                     .fullShortUrl(fullShortUrl)
                     .favicon(getFavicon(requestParam.getOriginUrl()))
                     .build();
@@ -214,7 +212,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .in("gid", requestParam)
                 .eq("enable_status", 0)
                 .eq("del_flag", 0)
-                .eq("del_time", 0L)
                 .groupBy("gid");
 
         List<Map<String, Object>> shortLinkDOList = baseMapper.selectMaps(queryWrapper);
@@ -293,13 +290,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
                         .eq(ShortLinkDO::getGid, hasShortLinkDO.getGid())
                         .eq(ShortLinkDO::getDelFlag, 0)
-                        .eq(ShortLinkDO::getDelTime, 0L)
                         .eq(ShortLinkDO::getEnableStatus, 0);
-                ShortLinkDO delShortLinkDO = ShortLinkDO.builder()
-                        .delTime(System.currentTimeMillis())
-                        .build();
-                delShortLinkDO.setDelFlag(1);
-                baseMapper.update(delShortLinkDO, linkUpdateWrapper);
+                baseMapper.delete( linkUpdateWrapper);
                 ShortLinkDO shortLinkDO = ShortLinkDO.builder()
                         .domain(createShortLinkDefaultDomain)
                         .originUrl(requestParam.getOriginUrl())
@@ -315,7 +307,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .totalUip(hasShortLinkDO.getTotalUip())
                         .fullShortUrl(hasShortLinkDO.getFullShortUrl())
                         .favicon(getFavicon(requestParam.getOriginUrl()))
-                        .delTime(0L)
                         .build();
                 baseMapper.insert(shortLinkDO);
                 LambdaQueryWrapper<ShortLinkGotoDO> linkGotoQueryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
