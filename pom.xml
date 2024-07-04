@@ -26,7 +26,7 @@
         <fastjson2.version>2.0.36</fastjson2.version>   <!-- Fastjson2（Java JSON 解析库）的版本 -->
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version> <!-- MyBatis Plus 的版本 -->
         <dozer-core.version>6.5.2</dozer-core.version> <!-- Dozer（Java Bean 映射工具）的版本 -->
-        <hutool-all.version>5.8.20</hutool-all.version> <!-- Hutool（Java 工具类库）的版本 -->
+        <hutool-all.version>5.8.27</hutool-all.version> <!-- Hutool（Java 工具类库）的版本 -->
         <redisson.version>3.21.3</redisson.version> <!-- Redisson（基于 Redis 的 Java 工具库）的版本 -->
         <guava.version>30.0-jre</guava.version> <!-- Guava（Google Java 工具库）的版本 -->
         <jsoup.version>1.17.2</jsoup.version> <!-- Jsoup（Java HTML 解析器）的版本 -->
