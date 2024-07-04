@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * 短链接统计实体
  */
@@ -64,4 +66,9 @@ public class ShortLinkStatsRecordDTO {
      * 消息队列唯一标识
      */
     private String keys;
+
+    /**
+     * 当前时间
+     */
+    private Date currentDate;
 }
