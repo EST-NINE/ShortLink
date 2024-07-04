@@ -16,6 +16,9 @@ public class MessageQueueIdempotentHandler {
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * Redis中存储幂等性标识的key前缀
+     */
     private static final String IDEMPOTENT_KEY_PREFIX = "short-link:idempotent:";
 
     /**
