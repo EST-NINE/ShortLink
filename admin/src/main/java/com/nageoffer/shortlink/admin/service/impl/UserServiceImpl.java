@@ -37,6 +37,7 @@ import static com.nageoffer.shortlink.admin.common.constant.RedisCacheConstant.L
 import static com.nageoffer.shortlink.admin.common.constant.RedisCacheConstant.USER_LOGIN_KEY;
 import static com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum.USER_EXIST;
 import static com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum.USER_SAVE_ERROR;
+import static com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_EXIST;
 
 /**
  * 用户接口实现层
@@ -80,28 +81,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
         // 加分布式锁(多个相同 username 请求，只有一个可以执行)
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
+        if (!lock.tryLock()) {
+            throw new ClientException(USER_NAME_EXIST);
+        }
+
+        // 执行注册逻辑
         try {
-            if (lock.tryLock()) {
-                // 执行注册逻辑
-                try {
-                    int inserted =baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-                    if (inserted < 1) {
-                        throw new ClientException(USER_SAVE_ERROR);
-                    }
-                } catch (DuplicateKeyException ex) {{{
-                    throw new ClientException(USER_EXIST);
-                }}}
-
-                // 更新布隆过滤器
-                userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
-
-                // 注册成功，先添加一个短链接默认分组
-                groupService.saveGroup(requestParam.getUsername(),"默认分组");
-                return;
+            int inserted = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+            if (inserted < 1) {
+                throw new ClientException(USER_SAVE_ERROR);
             }
-
-            // 如果没有获取到锁
-            throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
+            userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+            groupService.saveGroup(requestParam.getUsername(), "默认分组");
+        } catch (DuplicateKeyException ex) {
+            throw new ClientException(USER_EXIST);
         } finally {
             lock.unlock();
         }
@@ -110,7 +103,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public void update(UserUpdateReqDTO requestParam) {
         if (!Objects.equals(requestParam.getUsername(), UserContext.getUsername())) {
-            throw new ClientException(UserErrorCodeEnum.USER_UPDATE_ERROR);
+            throw new ClientException("当前登录用户修改请求异常");
         }
 
         LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
