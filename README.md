@@ -1,4 +1,4 @@
-# ShortLink 短链接项目开发
+# 🔥SaaS 短链接项目开发
 
 从零到一实现一个 SaaS短链接服务项目。
 
@@ -13,7 +13,7 @@ URL。短链接通常只包含几个字符，而原始的长 URL 可能会非常
 
 1. **生成唯一标识符**：当用户输入或提交一个长 URL 时，短链接服务会生成一个唯一的标识符或者短码。
 2. **将标识符与长 URL 关联**：短链接服务将这个唯一标识符与用户提供的长 URL 关联起来，并将其保存在数据库或者其他持久化存储中。
-3. **创建短链接**：将生成的唯一标识符加上短链接服务的域名（例如：http://nine.ink ）作为前缀，构成一个短链接。
+3. **创建短链接**：将生成的唯一标识符加上短链接服务的域名（例如：https://nine.ink 或者 [nine.ink](https://nine.ink) ）作为前缀，构成一个短链接。
 4. **重定向**：当用户访问该短链接时，短链接服务接收到请求后会根据唯一标识符查找关联的长 URL，然后将用户重定向到这个长 URL。
 5. **跟踪统计**：一些短链接服务还会提供访问统计和分析功能，记录访问量、来源、地理位置等信息。
 
@@ -35,22 +35,38 @@ git clone git@github.com:EST-NINE/shortlink.git
 ```
 #### 2. 导入到 IDE
 ```
-IDEA 导入 Maven 项目，等待依赖下载完成。(jdk版本要求为17，maven版本要求为3.9.6+)
+IDEA 导入 Maven 项目，等待依赖下载完成。( jdk 版本要求为17，maven 版本要求为3.9.6+)
 ```
-#### 3. 配置数据库
+#### 3. 配置 Mysql 数据库
 ```
-在 admin，gateway，project 包下修改 application.yml 中配置 mysql，redis 数据库连接信息
-执行 resource 包 link.sql 和 link_data.sql 初始化数据库表结构。
+1. 在 admin，gateway 包下修改 shardingsphere-config-dev.yaml 中配置 mysql 数据库连接信息
+
+2. 执行 resources/database 包 link.sql 和 link_data.sql 初始化数据库表结构。
 ```
-#### 4. 更改其他配置文件
+
+#### 4. 配置 Redis 服务
 ```
-1. 修改短链接的域名，默认为 nine.ink(如在本地测试，请修改为 http://localhost:8080)
-2. 在 project 的application.yml 中配置跳转链接白名单，受限于网络安全规则，短链接跳转的目标网址仅支持 拿个offer、知乎、掘金、博客园、百度域名下所属链接。(本地测试可自行多加白名单)
+在 admin，gateway，project 包下修改 application.yml 中配置 redis 连接信息
+（注：这里的 redis 版本要求为5.0+，不然启动会报错）
 ```
-#### 5. 启动项目
+
+#### 5. 更改其他配置文件(修改 project 包下的 application.yml)
 ```
-首先先在本地启动 redis，nacos 服务
-然后再启动 admin，gateway，project 三个服务即可。
+1. 配置短链接的域名${short-link.domain.default}，默认为 nine.ink
+(注：如在本地测试，请修改为 http://localhost:8081)
+
+2. 配置跳转链接白名单，默认全部开放
+(注：正式上线部署需注意网络安全规则，将${short-link.goto-domain.white-list.enable} 设置为 true，并配置${short-link.goto-domain.white-list.details}，防止恶意跳转)
+
+3. 如需使用高德地图统计短链接访问地理位置，自行${short-link.stats.locale.amap-key}
+(注：不配置也不影响正常使用)
+```
+
+#### 6. 启动项目
+```
+1. 首先先在本地启动 redis，nacos 服务
+
+2. 然后再依次启动 project, admin, gateway， 三个服务即可。
 ```
 
 ### 二：前端(Vue)
@@ -68,14 +84,24 @@ npm install
 ```
 #### 4. 启动项目
 ```bash
-npm run serve
+npm run dev
 ```
 
 ## 技术架构
 在系统设计中，采用最新 JDK17 + SpringBoot3&SpringCloud 微服务架构，构建高并发、大数据量下仍然能提供高效可靠的短链接生成服务。
 
+## 项目亮点
+短链接项目采用 SaaS 方式开发。"SaaS"代表“软件即服务”（Software as a Service），与传统的软件模型不同，SaaS 不需要用户在本地安装和维护软件，而是通过互联网直接访问在线应用程序。
+
+- **海量并发**：可能会面对大量用户同时访问的情况，尤其在高峰期，这会对系统的性能和响应速度提出很高的要求。
+- **海量存储**：可能需要存储大量的用户数据，包括数据库、缓存等，需要足够的存储空间和高效的存储管理方案。
+- **多租户场景**：通常支持多个租户共享同一套系统，需要保证租户间的数据隔离、安全性和性能。
+- **数据安全性**：需要保证用户数据的安全性和隐私，防止未经授权的访问和数据泄露。
+- **扩展性&可伸缩性**：需要具备良好的扩展性，以应对用户数量和业务规模的增长。
+
+
 ## 官方文档
-- 🔥官方 SaaS 短链接系统代码仓库：[https://gitee.com/nageoffer/shortlink](https://gitee.com/nageoffer/shortlink)
+-  官方 SaaS 短链接系统代码仓库：[https://github.com/nageoffer/shortlink](https://github.com/nageoffer/shortlink)
 -  什么是 SaaS 短链接系统：[https://nageoffer.com/shortlink](https://nageoffer.com/shortlink)
 -  官方 SaaS 短链接视频教程：[https://nageoffer.com/shortlink/video](https://nageoffer.com/shortlink/video)
 ---
