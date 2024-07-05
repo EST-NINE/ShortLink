@@ -1,15 +1,6 @@
 server:
   port: 8002
 
-# 实现逻辑逻辑删除
-mybatis-plus:
-  global-config:
-    db-config:
-      logic-delete-field: delFlag
-      logic-delete-value: 1
-      logic-not-delete-value: 0
-      id-type: auto
-
 spring:
   application:
     name: short-link-admin
