@@ -75,9 +75,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final ShortLinkStatsSaveProducer shortLinkStatsSaveProducer;
     private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
 
-    @Value("${short-link.stats.locale.amap-key}")
-    private String statsLocaleAmapKey;
-
     @Value("${short-link.domain.default}")
     private String createShortLinkDefaultDomain;
 
@@ -340,7 +337,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @SneakyThrows
     @Override
     public void restoreUrl(String shortUri, ServletRequest request, ServletResponse response) {
-        String serverName = request.getServerName();
+    String serverName = request.getServerName();
+        // 获取服务器端口，并过滤80端口( 如果端口不是80，则将其转换为字符串, 如果端口是80，则返回空字符串)
         String serverPort = Optional.of(request.getServerPort())
                 .filter(each -> !Objects.equals(each, 80))
                 .map(String::valueOf)
@@ -351,19 +349,20 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
         // 如果缓存中存在，则不用在数据库中查询
         if (StrUtil.isNotBlank(originalLink)) {
+            // 使用消息队列实现异步化处理监控统计数据
             shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
             ((HttpServletResponse) response).sendRedirect(originalLink);
             return;
         }
 
-        // 判断布隆过滤器中是否存在对应的 KEY，解决缓存穿透问题(不存在的值)
+        // 判断布隆过滤器中是否存在对应的 KEY，解决缓存穿透问题(这里缓存存在存在一定的误判)
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         if (!contains) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
         }
 
-        // 布隆过滤器存在可能会发生误判，这里在缓存中进行双重判定
+        // 在缓存中进行双重判定
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
@@ -377,6 +376,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             // 双重判定锁，再次查询缓存，防止重复查询数据库
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
             if (StrUtil.isNotBlank(originalLink)) {
+                // 使用消息队列实现异步化处理监控统计数据
                 shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
                 ((HttpServletResponse) response).sendRedirect(originalLink);
                 return;
@@ -418,6 +418,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     shortLinkDO.getOriginUrl(),
                     LinkUtil.getShortLinkCacheValidTime(shortLinkDO.getValidDate()),
                     TimeUnit.MILLISECONDS);
+
+            // 使用消息队列实现异步化处理监控统计数据
             shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
             ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
@@ -473,6 +475,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .build();
     }
 
+    // 使用消息队列异步化处理短链接跳转后的监控统计数据
     @Override
     public void shortLinkStats(ShortLinkStatsRecordDTO statsRecord) {
         Map<String, String> producerMap = new HashMap<>();
@@ -480,7 +483,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         shortLinkStatsSaveProducer.send(producerMap);
     }
 
-    // 生成短链接后缀
+    // 通过布隆过滤器实现生成短链接后缀
     private String generateSuffix(ShortLinkCreateReqDTO requestParam) {
         int customGenerateCount = 0;
         String shortUri;
@@ -521,7 +524,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return null;
     }
 
-    // 通过锁生成后缀
+    // 通过查询数据库实现生成短链接后缀
     private String generateSuffixByLock(ShortLinkCreateReqDTO requestParam) {
         int customGenerateCount = 0;
         String shorUri;

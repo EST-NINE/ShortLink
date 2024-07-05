@@ -15,6 +15,12 @@ public class HashUtil {
 
     private static final int SIZE = CHARS.length;
 
+    /**
+     * 将十进制数字转换为 Base62 字符串
+     *
+     * @param num 十进制数字
+     * @return Base62 字符串
+     */
     private static String convertDecToBase62(long num) {
         StringBuilder sb = new StringBuilder();
         while (num > 0) {
@@ -25,6 +31,12 @@ public class HashUtil {
         return sb.reverse().toString();
     }
 
+    /**
+     * 将字符串哈希后转换为 Base62 字符串
+     *
+     * @param str 字符串
+     * @return Base62 字符串
+     */
     public static String hashToBase62(String str) {
         int i = MurmurHash.hash32(str);
         long num = i < 0 ? Integer.MAX_VALUE - (long) i : i;

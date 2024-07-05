@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {AbstractException.class})
     public Result abstractException(HttpServletRequest request, AbstractException ex) {
         if (ex.getCause() != null) {
-            log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString(), ex.getCause());
+            log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex, ex.getCause());
             return Results.failure(ex);
         }
         log.error("[{}] {} [ex] {}", request.getMethod(), request.getRequestURL().toString(), ex.toString());

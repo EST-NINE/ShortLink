@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 短链接监控接口实现层
@@ -109,15 +110,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         }
 
         // 高频访问IP详情
-        List<ShortLinkStatsTopIpRespDTO> topIpStats = new ArrayList<>();
+        List<ShortLinkStatsTopIpRespDTO> topIpStats;
         List<HashMap<String, Object>> listTopIpByShortLink = linkAccessLogsMapper.listTopIpByShortLink(requestParam);
-        listTopIpByShortLink.forEach(each -> {
-            ShortLinkStatsTopIpRespDTO statsTopIpRespDTO = ShortLinkStatsTopIpRespDTO.builder()
-                    .ip(each.get("ip").toString())
-                    .cnt(Integer.parseInt(each.get("count").toString()))
-                    .build();
-            topIpStats.add(statsTopIpRespDTO);
-        });
+        topIpStats = listTopIpByShortLink.stream().map(each -> ShortLinkStatsTopIpRespDTO.builder()
+                .ip(each.get("ip").toString())
+                .cnt(Integer.parseInt(each.get("count").toString()))
+                .build()).collect(Collectors.toList());
 
         // 一周访问详情
         List<Integer> weekdayStats = new ArrayList<>();
@@ -275,7 +273,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 requestParam.getEndDate(),
                 userAccessLogsList
         );
-        actualResult.getRecords().forEach(each -> {
+        for (ShortLinkStatsAccessRecordRespDTO each : actualResult.getRecords()) {
             String uvType = uvTypeList.stream()
                     .filter(item -> Objects.equals(each.getUser(), item.get("user")))
                     .findFirst()
@@ -283,7 +281,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                     .map(Object::toString)
                     .orElse("旧访客");
             each.setUvType(uvType);
-        });
+        }
         return actualResult;
     }
 

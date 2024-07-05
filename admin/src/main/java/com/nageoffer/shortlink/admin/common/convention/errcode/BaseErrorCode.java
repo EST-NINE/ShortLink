@@ -2,7 +2,7 @@ package com.nageoffer.shortlink.admin.common.convention.errcode;
 
 
 /**
- * 基础错误码定义
+ * 基础错误码定义，遵循阿里错误码规范
  */
 public enum BaseErrorCode implements IErrorCode {
 

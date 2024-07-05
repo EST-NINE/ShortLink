@@ -29,9 +29,13 @@ public class DelayShortLinkStatsProducer {
      * @param statsRecord 短链接统计实体参数
      */
     public void send(ShortLinkStatsRecordDTO statsRecord) {
+        // 生成一个随机的key
         statsRecord.setKeys(UUID.fastUUID().toString());
+        // 获取阻塞队列
         RBlockingDeque<ShortLinkStatsRecordDTO> blockingDeque = redissonClient.getBlockingDeque(DELAY_QUEUE_STATS_KEY);
+        // 获取延迟队列
         RDelayedQueue<ShortLinkStatsRecordDTO> delayedQueue = redissonClient.getDelayedQueue(blockingDeque);
+        // 将统计实体放入延迟队列中，延迟时间为5秒
         delayedQueue.offer(statsRecord, 5, TimeUnit.SECONDS);
     }
 }

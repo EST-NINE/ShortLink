@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * 有效期类型
  */
+@Getter
 @RequiredArgsConstructor
 public enum VailDateTypeEnum {
 
@@ -20,7 +21,5 @@ public enum VailDateTypeEnum {
      */
     CUSTOM(1);
 
-    @Getter
     private final int type;
-
 }

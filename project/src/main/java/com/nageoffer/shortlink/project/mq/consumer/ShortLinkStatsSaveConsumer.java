@@ -54,9 +54,17 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
     private final StringRedisTemplate stringRedisTemplate;
     private final MessageQueueIdempotentHandler messageQueueIdempotentHandler;
 
+    /**
+     * 高德API key
+     */
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
 
+    /**
+     * 消费者消费消息
+     *
+     * @param message 消息
+     */
     @Override
     public void onMessage(MapRecord<String, String, String> message) {
         String stream = message.getStream();
@@ -75,7 +83,7 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
             actualSaveShortLinkStats(statsRecord);
             stringRedisTemplate.opsForStream().delete(Objects.requireNonNull(stream), id.getValue());
         } catch (Throwable ex) {
-            // 某某某情况宕机了
+            // 宕机处理
             messageQueueIdempotentHandler.delMessageProcessed(id.toString());
             log.error("记录短链接监控消费异常", ex);
             throw ex;
@@ -84,15 +92,23 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
         messageQueueIdempotentHandler.setAccomplish(id.toString());
     }
 
+    /**
+     * 实际保存短链接统计监控信息
+     *
+     * @param statsRecord 短链接各种统计监控信息
+     */
     public void actualSaveShortLinkStats(ShortLinkStatsRecordDTO statsRecord) {
         String fullShortUrl = statsRecord.getFullShortUrl();
         RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(String.format(LOCK_GID_UPDATE_KEY, fullShortUrl));
         RLock rLock = readWriteLock.readLock();
         rLock.lock();
         try {
+            // 从 link_goto 表中通过 full_short_url 来得到基础的短链接的 gid
             LambdaQueryWrapper<ShortLinkGotoDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(queryWrapper);
+
+            // 记录短链接基础监控信息
             String gid = shortLinkGotoDO.getGid();
             Date currentDate = statsRecord.getCurrentDate();
             int hour = DateUtil.hour(currentDate, true);
@@ -108,6 +124,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+
+            // 记录短链接地域监控信息
             Map<String, Object> localeParamMap = new HashMap<>();
             localeParamMap.put("key", statsLocaleAmapKey);
             localeParamMap.put("ip", statsRecord.getRemoteAddr());
@@ -130,6 +148,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                         .build();
                 linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
             }
+
+            // 记录短链接操作系统监控信息
             LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
                     .os(statsRecord.getOs())
                     .cnt(1)
@@ -137,6 +157,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkOsStatsMapper.shortLinkOsState(linkOsStatsDO);
+
+            // 记录短链接浏览器监控信息
             LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
                     .browser(statsRecord.getBrowser())
                     .cnt(1)
@@ -144,6 +166,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkBrowserStatsMapper.shortLinkBrowserState(linkBrowserStatsDO);
+
+            // 记录短链接设备监控信息
             LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
                     .device(statsRecord.getDevice())
                     .cnt(1)
@@ -151,6 +175,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkDeviceStatsMapper.shortLinkDeviceState(linkDeviceStatsDO);
+
+            // 记录短链接网络监控信息
             LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
                     .network(statsRecord.getNetwork())
                     .cnt(1)
@@ -158,6 +184,8 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .date(currentDate)
                     .build();
             linkNetworkStatsMapper.shortLinkNetworkState(linkNetworkStatsDO);
+
+            // 记录短链接访问日志信息
             LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
                     .user(statsRecord.getUv())
                     .ip(statsRecord.getRemoteAddr())
@@ -169,7 +197,11 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .fullShortUrl(fullShortUrl)
                     .build();
             linkAccessLogsMapper.insert(linkAccessLogsDO);
+
+            // 自增短链接访问次数
             shortLinkMapper.incrementStats(gid, fullShortUrl, 1, statsRecord.getUvFirstFlag() ? 1 : 0, statsRecord.getUipFirstFlag() ? 1 : 0);
+
+            // 记录短链接今日访问的统计信息
             LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
                     .todayPv(1)
                     .todayUv(statsRecord.getUvFirstFlag() ? 1 : 0)
